@@ -73,15 +73,13 @@ function ProductGallery({media}) {
       slides-per-view="1"
       navigation="true"
       pagination="true"
+      class='overflow-hidden rounded-md'
     >
       {media.map((med, i) => {
         let extraProps = {};
 
         if (med.mediaContentType === 'MODEL_3D') {
           extraProps = {
-            mediaOptions: {
-              image: 'sizes="(min-width: 45em) 50vw, 100vw"'
-            },
             interactionPromptThreshold: '0',
             ar: true,
             loading: 'eager',
@@ -100,10 +98,13 @@ function ProductGallery({media}) {
         };
 
         return (
-            <swiper-slide key={data.id || data.image.id}>
+            <swiper-slide
+             key={data.id || data.image.id}
+             class='overflow-hidden rounded-md'
+            >
               <MediaFile
                 tabIndex="0"
-                className={`w-full h-full aspect-square object-cover`}
+                className={`w-full h-full aspect-square object-cover text-center`}
                 data={data}
                 {...extraProps}
               />
