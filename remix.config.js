@@ -4,6 +4,7 @@ module.exports = {
   ignoredRouteFiles: ['**/.*'],
   watchPaths: ['./public'],
   server: './server.js',
+  tailwind: true,
   /**
    * The following settings are required to deploy Hydrogen apps to Oxygen:
    */
@@ -23,5 +24,4 @@ module.exports = {
     v2_routeConvention: true,
     v2_normalizeFormMethod: true,
   },
-  tailwind: true,
 };

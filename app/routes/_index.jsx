@@ -35,7 +35,7 @@ export default function Index() {
         Collections
       </h2>
       <div className="grid-flow-row grid gap-2 gap-y-6 md:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-3">
-        {collections.nodes.map((collection) => {
+        {collections?.nodes?.map((collection) => {
           return (
             <Link to={`/collections/${collection.handle}`} key={collection.id}>
               <div className="grid gap-4">

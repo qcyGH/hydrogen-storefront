@@ -5,9 +5,14 @@ import {json} from '@shopify/remix-oxygen';
 
 import ProductOptions from '~/components/ProductOptions';
 
+// import function to register Swiper custom elements
+import { register } from 'swiper/element/bundle';
+
+register();
+
 const seo = ({data}) => ({
   title: data?.product?.seo?.title || data?.product?.title,
-  description: data?.product?.seo?.description || data?.product?.description,
+  description: data?.product?.seo?.description?.substr(0, 154) || data?.product?.description?.substr(0, 154),
   media: data?.product?.media?.nodes[0]?.image?.url,
 });
 
@@ -64,8 +69,10 @@ function ProductGallery({media}) {
   };
 
   return (
-    <div
-      className={`grid gap-4 overflow-x-scroll grid-flow-col md:grid-flow-row  md:p-0 md:overflow-x-auto md:grid-cols-2 w-[90vw] md:w-full lg:col-span-2`}
+    <swiper-container
+      slides-per-view="1"
+      navigation="true"
+      pagination="true"
     >
       {media.map((med, i) => {
         let extraProps = {};
@@ -90,22 +97,17 @@ function ProductGallery({media}) {
         };
 
         return (
-          <div
-            className={`${
-              i % 3 === 0 ? 'md:col-span-2' : 'md:col-span-1'
-            } snap-center card-image bg-white aspect-square md:w-full w-[80vw] shadow-sm rounded`}
-            key={data.id || data.image.id}
-          >
-            <MediaFile
-              tabIndex="0"
-              className={`w-full h-full aspect-square object-cover`}
-              data={data}
-              {...extraProps}
-            />
-          </div>
+            <swiper-slide key={data.id || data.image.id}>
+              <MediaFile
+                tabIndex="0"
+                className={`w-full h-full aspect-square object-cover`}
+                data={data}
+                {...extraProps}
+              />
+            </swiper-slide>
         );
       })}
-    </div>
+    </swiper-container>
   );
 }
 
