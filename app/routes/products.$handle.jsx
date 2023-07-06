@@ -79,6 +79,9 @@ function ProductGallery({media}) {
 
         if (med.mediaContentType === 'MODEL_3D') {
           extraProps = {
+            mediaOptions: {
+              image: 'sizes="(min-width: 45em) 50vw, 100vw"'
+            },
             interactionPromptThreshold: '0',
             ar: true,
             loading: 'eager',
