@@ -19,14 +19,24 @@ export default function ProductSlider({products, header = 'Featured products'}) 
 
   return (
     <div className='max-w-[100vw]'>
-      <h2>{header}</h2>
+      <h2 className='text-2xl font-medium mb-3'>{header}</h2>
       <Swiper
-        // install Swiper modules
         modules={[Navigation, Pagination]}
         spaceBetween={50}
-        slidesPerView={3}
+        slidesPerView={1}
         navigation
         pagination={{ clickable: true }}
+        breakpoints={{
+          640: {
+            slidesPerView: 2
+          },
+          1024: {
+            slidesPerView: 3
+          },
+          1280: {
+            slidesPerView: 4
+          }
+        }}
       >
         {
           products?.map((product) => {
