@@ -196,17 +196,23 @@ export default function ProductHandle() {
             data={selectedVariant.price}
             className="text-xl font-semibold mb-2"
           />
-          {orderable && (
-            <div className="space-y-2">
-              <ShopPayButton
-                storeDomain={storeDomain}
-                variantIds={[selectedVariant?.id]}
-                width={'100%'}
-                className='grid grid-cols-1'
-              />
-              <ProductForm variantId={selectedVariant?.id} />
-            </div>
-          )}
+          {
+            orderable ? (
+              <div className="space-y-2">
+                <ShopPayButton
+                  storeDomain={storeDomain}
+                  variantIds={[selectedVariant?.id]}
+                  width={'100%'}
+                  className='grid grid-cols-1'
+                />
+                <ProductForm variantId={selectedVariant?.id} />
+              </div>
+            ) : (
+              <div className="bg-zinc-800 text-white px-6 py-3 w-full rounded-md text-center font-medium">
+                Not orderable
+              </div>
+            )
+          }
           <div
             className="prose border-t border-gray-200 pt-6 text-black text-md"
             dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
