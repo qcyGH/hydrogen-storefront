@@ -5,12 +5,14 @@ import {json} from '@shopify/remix-oxygen';
 
 import ProductOptions from '~/components/ProductOptions';
 
-// import function to register Swiper custom elements
-import { register } from 'swiper/element/bundle';
-import ProductSlider from '~/components/ProductSlider';
-import { useEffect } from 'react';
+// import Swiper core and required modules
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination } from 'swiper/modules';
 
-register();
+import ProductSlider from '~/components/ProductSlider';
+
+//temp
+import { useEffect } from 'react';
 
 const seo = ({data}) => ({
   title: data?.product?.seo?.title || data?.product?.title,
@@ -80,11 +82,14 @@ function ProductGallery({media}) {
   };
 
   return (
-    <swiper-container
-      slides-per-view="1"
-      navigation="true"
-      pagination="true"
-      class='overflow-hidden rounded-md'
+    <Swiper
+      // install Swiper modules
+      modules={[Navigation, Pagination]}
+      spaceBetween={50}
+      slidesPerView={1}
+      navigation
+      pagination={{ clickable: true }}
+      className='overflow-hidden rounded-md'
     >
       {media.map((med, i) => {
         let extraProps = {};
@@ -109,7 +114,7 @@ function ProductGallery({media}) {
         };
 
         return (
-            <swiper-slide
+            <SwiperSlide
              key={data.id || data.image.id}
              class='overflow-hidden rounded-md'
             >
@@ -119,10 +124,10 @@ function ProductGallery({media}) {
                 data={data}
                 {...extraProps}
               />
-            </swiper-slide>
+            </SwiperSlide>
         );
       })}
-    </swiper-container>
+    </Swiper>
   );
 }
 
