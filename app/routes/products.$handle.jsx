@@ -322,7 +322,6 @@ const PRODUCT_RECOMMENDATIONS = `#graphql
     id
     title
     handle
-    description
     variants(first: 1) {
       nodes {
         id
