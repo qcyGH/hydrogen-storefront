@@ -28,7 +28,7 @@ export default function Index() {
   return (
     <>
     <section className='w-full'>
-      <ProductSlider products={products}/>
+      <ProductSlider products={products.edges}/>
     </section>
     <section className="w-full gap-4">
       <h2 className="whitespace-pre-wrap max-w-prose font-bold text-lead">

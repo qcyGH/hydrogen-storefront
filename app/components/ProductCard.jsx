@@ -2,8 +2,14 @@ import {Link} from '@remix-run/react';
 import {Image, Money} from '@shopify/hydrogen';
 
 export default function ProductCard({product}) {
-  const {price, compareAtPrice} = product.variants?.nodes[0] || {};
-  const isDiscounted = compareAtPrice?.amount > price?.amount;
+  const {price} = product.variants?.nodes[0] || {}
+  let isDiscounted = false
+  let compareAtPrice = null
+
+  if (product.variants?.nodes[0].compareAtPrice) {
+    compareAtPrice = product.variants?.nodes[0].compareAtPrice
+    isDiscounted = compareAtPrice?.amount > price?.amount
+  }
 
   return (
     <Link to={`/products/${product.handle}`}>

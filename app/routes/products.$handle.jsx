@@ -7,6 +7,8 @@ import ProductOptions from '~/components/ProductOptions';
 
 // import function to register Swiper custom elements
 import { register } from 'swiper/element/bundle';
+import ProductSlider from '~/components/ProductSlider';
+import { useEffect } from 'react';
 
 register();
 
@@ -42,11 +44,20 @@ export async function loader({params, context, request}) {
     throw new Response(null, {status: 404});
   }
 
+  const productId = product?.id
+
+  const {productRecommendations} = await context.storefront.query(PRODUCT_RECOMMENDATIONS, {
+    variables: {
+      productId
+    },
+  });
+
   // optionally set a default variant so you always have an "orderable" product selected
   const selectedVariant = product.selectedVariant ?? product?.variants?.nodes[0];
 
   return json({
     product,
+    productRecommendations,
     selectedVariant,
     storeDomain,
     analytics: {
@@ -146,8 +157,13 @@ function ProductForm({variantId, productAnalytics}) {
 
 
 export default function ProductHandle() {
-  const {product, selectedVariant, storeDomain} = useLoaderData();
+  const {product, productRecommendations, selectedVariant, storeDomain} = useLoaderData();
   const orderable = selectedVariant?.availableForSale || false;
+
+  useEffect(() => {
+    console.log(productRecommendations)
+    console.log(product.id)
+  }, [])
 
   return (
     <section className="w-full gap-4 md:gap-8 grid px-6 md:px-8 lg:px-12">
@@ -192,6 +208,10 @@ export default function ProductHandle() {
           />
         </div>
       </div>
+      <ProductSlider
+        products={productRecommendations}
+        header='Recommendations'
+      />
     </section>
   );
 }
@@ -290,3 +310,39 @@ const PRODUCT_QUERY = `#graphql
     }
   }
 `;
+
+const PRODUCT_RECOMMENDATIONS = `#graphql
+  query getProductRecommendations($productId: ID!) {
+  productRecommendations(productId: $productId) {
+    id
+    title
+    description
+    variants(first: 1) {
+      nodes {
+        id
+        title
+        availableForSale
+        image {
+          id
+          url
+          altText
+          width
+          height
+        }
+        price {
+          currencyCode
+          amount
+        }
+        compareAtPrice {
+          currencyCode
+          amount
+        }
+        selectedOptions {
+          name
+          value
+        }
+      }
+    }
+  }
+}
+`

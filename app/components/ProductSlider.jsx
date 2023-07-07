@@ -12,12 +12,12 @@ register();
  */
 export default function ProductSlider({products, header = 'Featured products'}) {
 
-  if (products?.edges?.length === 0) {
+  if (products?.length === 0) {
     return <p>No products found.</p>;
   }
 
   return (
-    <>
+    <div className='max-w-[100vw]'>
       <h2>{header}</h2>
       <swiper-container
         slides-per-view="4"
@@ -25,15 +25,15 @@ export default function ProductSlider({products, header = 'Featured products'}) 
         pagination="true"
       >
         {
-          products?.edges?.map((product) => {
+          products?.map((product) => {
             return (
-              <swiper-slide key={product.node.id}>
-                <ProductCard product={product.node}/>
+              <swiper-slide key={product.id}>
+                <ProductCard product={product}/>
               </swiper-slide>
             )
           })
         }
       </swiper-container>
-    </>
+    </div>
   );
 };
