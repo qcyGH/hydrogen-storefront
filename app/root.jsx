@@ -17,6 +17,7 @@ import {
 } from '@shopify/hydrogen';
 import tailwind from './styles/tailwind-build.css';
 import styles from './styles/app.css';
+import swiper from './styles/swiper-bundle.min.css'
 import favicon from '../public/favicon.svg';
 import {Layout} from './components/Layout';
 import {defer} from '@shopify/remix-oxygen';
@@ -28,6 +29,7 @@ export const links = () => {
   return [
     {rel: 'stylesheet', href: tailwind},
     {rel: 'stylesheet', href: styles},
+    {rel: 'stylesheet', href: swiper},
     {
       rel: 'preconnect',
       href: 'https://cdn.shopify.com',

@@ -1,9 +1,16 @@
-// import function to register Swiper custom elements
-import { register } from 'swiper/element/bundle';
+// import Swiper core and required modules
+import { Navigation, Pagination, Scrollbar, A11y } from 'swiper/modules';
+
+import { Swiper, SwiperSlide } from 'swiper/react';
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/scrollbar';
 
 import ProductCard from '~/components/ProductCard';
 
-register();
 
 /**
  * Display a slider with products and a heading based on some options.
@@ -19,21 +26,25 @@ export default function ProductSlider({products, header = 'Featured products'}) 
   return (
     <div className='max-w-[100vw]'>
       <h2>{header}</h2>
-      <swiper-container
-        slides-per-view="4"
-        navigation="true"
-        pagination="true"
+      <Swiper
+        // install Swiper modules
+        modules={[Navigation, Pagination, Scrollbar, A11y]}
+        spaceBetween={50}
+        slidesPerView={3}
+        navigation
+        pagination={{ clickable: true }}
+        scrollbar={{ draggable: true }}
       >
         {
           products?.map((product) => {
             return (
-              <swiper-slide key={product.id}>
+              <SwiperSlide key={product.id}>
                 <ProductCard product={product}/>
-              </swiper-slide>
+              </SwiperSlide>
             )
           })
         }
-      </swiper-container>
+      </Swiper>
     </div>
   );
 };
