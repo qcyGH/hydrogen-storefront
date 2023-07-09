@@ -1,7 +1,16 @@
 import {useLoaderData} from '@remix-run/react';
 import {json} from '@shopify/remix-oxygen';
-import {AnalyticsPageType} from '@shopify/hydrogen';
-import ProductGrid from '../components/ProductGrid';
+import {
+  AnalyticsPageType,
+  flattenConnection,
+  Pagination__unstable as Pagination,
+  getPaginationVariables__unstable as getPaginationVariables
+} from '@shopify/hydrogen';
+import ProductCard from '~/components/ProductCard';
+import { SortFilter } from '~/components/SortFilter';
+import { Grid } from '~/components/Grid';
+import { Button } from '~/components/Button';
+import { useEffect } from 'react';
 
 const seo = ({data}) => ({
   title: data?.collection?.title,
@@ -14,14 +23,71 @@ export const handle = {
 };
 
 export async function loader({params, context, request}) {
+  const paginationVariables = getPaginationVariables(request, {
+    pageBy: 24,
+  });
   const {handle} = params;
-  const searchParams = new URL(request.url).searchParams;
-  const cursor = searchParams.get('cursor');
 
-  const {collection} = await context.storefront.query(COLLECTION_QUERY, {
+  const searchParams = new URL(request.url).searchParams;
+
+  const knownFilters = ['productVendor', 'productType'];
+  const available = 'available';
+  const variantOption = 'variantOption';
+  const {sortKey, reverse} = getSortValuesFromParam(searchParams.get('sort'));
+  const filters = [];
+  const appliedFilters = [];
+
+  for (const [key, value] of searchParams.entries()) {
+    if (available === key) {
+      filters.push({available: value === 'true'});
+      appliedFilters.push({
+        label: value === 'true' ? 'In stock' : 'Out of stock',
+        urlParam: {
+          key: available,
+          value,
+        },
+      });
+    } else if (knownFilters.includes(key)) {
+      filters.push({[key]: value});
+      appliedFilters.push({label: value, urlParam: {key, value}});
+    } else if (key.includes(variantOption)) {
+      const [name, val] = value.split(':');
+      filters.push({variantOption: {name, value: val}});
+      appliedFilters.push({label: val, urlParam: {key, value}});
+    }
+  }
+
+  // Builds min and max price filter since we can't stack them separately into
+  // the filters array. See price filters limitations:
+  // https://shopify.dev/custom-storefronts/products-collections/filter-products#limitations
+  if (searchParams.has('minPrice') || searchParams.has('maxPrice')) {
+    const price = {};
+    if (searchParams.has('minPrice')) {
+      price.min = Number(searchParams.get('minPrice')) || 0;
+      appliedFilters.push({
+        label: `Min: $${price.min}`,
+        urlParam: {key: 'minPrice', value: searchParams.get('minPrice')},
+      });
+    }
+    if (searchParams.has('maxPrice')) {
+      price.max = Number(searchParams.get('maxPrice')) || 0;
+      appliedFilters.push({
+        label: `Max: $${price.max}`,
+        urlParam: {key: 'maxPrice', value: searchParams.get('maxPrice')},
+      });
+    }
+    filters.push({
+      price,
+    });
+  }
+
+  const {collection, collections} = await context.storefront.query(COLLECTION_QUERY, {
     variables: {
-      handle,
-      cursor,
+      ...paginationVariables,
+      handle: handle,
+      filters,
+      sortKey,
+      reverse,
     },
   });
 
@@ -34,6 +100,8 @@ export async function loader({params, context, request}) {
   // https://remix.run/docs/en/v1/utils/json
   return json({
     collection,
+    appliedFilters,
+    collections: flattenConnection(collections),
     analytics: {
       pageType: AnalyticsPageType.Collection,
       collection: [collection],
@@ -42,7 +110,12 @@ export async function loader({params, context, request}) {
 }
 
 export default function Collection() {
-  const {collection} = useLoaderData();
+  const {collection, collections, appliedFilters} = useLoaderData();
+
+  useEffect(() => {
+    console.log(collection.products.nodes.length > 1)
+  }, [])
+
   return (
     <>
       <header className="grid w-full gap-8 py-8 justify-items-start">
@@ -60,28 +133,103 @@ export default function Collection() {
           </div>
         )}
       </header>
-      <ProductGrid
-        collection={collection}
-        url={`/collections/${collection.handle}`}
-      />
+      <SortFilter
+        filters={collection.products.filters}
+        appliedFilters={appliedFilters}
+        collections={collections}
+      >
+        {
+          collection.products?.nodes?.length > 1 ? (
+            <Pagination connection={collection.products}>
+              {({nodes, isLoading, PreviousLink, NextLink}) => (
+                <>
+                  <div className="flex items-center justify-center mb-6">
+                    <Button as={PreviousLink} variant="secondary" width="full">
+                      {isLoading ? 'Loading...' : 'Load previous'}
+                    </Button>
+                  </div>
+                  <Grid layout="products">
+                    {nodes.map((product, i) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                      />
+                    ))}
+                  </Grid>
+                  <div className="flex items-center justify-center mt-6">
+                    <Button as={NextLink} variant="secondary" width="full">
+                      {isLoading ? 'Loading...' : 'Load more products'}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </Pagination>
+        ) : (
+          <div className='text-center'>
+            <h3 className='mt-20 text-center text-xl font-bold'>
+              Products not found
+            </h3>
+            <span className='text-zinc-600'>
+              Try another filters
+            </span>
+          </div>
+        )
+        }
+      </SortFilter>
     </>
   );
 }
 
 const COLLECTION_QUERY = `#graphql
-  query CollectionDetails($handle: String!, $cursor: String) {
+  query CollectionDetails(
+      $handle: String!,
+      $filters: [ProductFilter!]
+      $sortKey: ProductCollectionSortKeys!
+      $reverse: Boolean
+      $first: Int
+      $last: Int
+      $startCursor: String
+      $endCursor: String
+    ) {
     collection(handle: $handle) {
       id
       title
       description
       handle
-      image {
-        url
+      seo {
+        description
+        title
       }
-      products(first: 4, after: $cursor) {
+      image {
+        id
+        url
+        width
+        height
+        altText
+      }
+      products(
+        first: $first,
+        last: $last,
+        before: $startCursor,
+        after: $endCursor,
+        filters: $filters,
+        sortKey: $sortKey,
+        reverse: $reverse
+      ) {
         pageInfo {
           hasNextPage
           endCursor
+        }
+        filters {
+          id
+          label
+          type
+          values {
+            id
+            label
+            count
+            input
+          }
         }
         nodes {
           id
@@ -110,5 +258,48 @@ const COLLECTION_QUERY = `#graphql
         }
       }
     }
+    collections(first: 100) {
+      edges {
+        node {
+          title
+          handle
+        }
+      }
+    }
   }
 `;
+
+function getSortValuesFromParam(sortParam) {
+  switch (sortParam) {
+    case 'price-high-low':
+      return {
+        sortKey: 'PRICE',
+        reverse: true,
+      };
+    case 'price-low-high':
+      return {
+        sortKey: 'PRICE',
+        reverse: false,
+      };
+    case 'best-selling':
+      return {
+        sortKey: 'BEST_SELLING',
+        reverse: false,
+      };
+    case 'newest':
+      return {
+        sortKey: 'CREATED',
+        reverse: true,
+      };
+    case 'featured':
+      return {
+        sortKey: 'MANUAL',
+        reverse: false,
+      };
+    default:
+      return {
+        sortKey: 'RELEVANCE',
+        reverse: false,
+      };
+  }
+}

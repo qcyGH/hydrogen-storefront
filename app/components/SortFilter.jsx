@@ -9,7 +9,9 @@ import {
 import {useDebounce} from 'react-use';
 import {Disclosure} from '@headlessui/react';
 
-import {Heading, IconFilters, IconCaret, IconXMark, Text} from '~/components';
+import {IconFilters} from '~/components/Icon';
+import {IconCaret} from '~/components/Icon';
+import {IconXMark} from '~/components/Icon';
 
 export function SortFilter({
   filters,
@@ -112,9 +114,9 @@ export function FiltersDrawer({
           </div>
         ) : null}
 
-        <Heading as="h4" size="lead" className="pb-4">
+        <h4 className="pb-4 font-bold text-lead">
           Filter By
-        </Heading>
+        </h4>
         <div className="divide-y">
           {filters.map(
             (filter) =>
@@ -123,7 +125,7 @@ export function FiltersDrawer({
                   {({open}) => (
                     <>
                       <Disclosure.Button className="flex justify-between w-full py-4">
-                        <Text size="lead">{filter.label}</Text>
+                        <span className='text-lead font-medium'>{filter.label}</span>
                         <IconCaret direction={open ? 'up' : 'down'} />
                       </Disclosure.Button>
                       <Disclosure.Panel key={filter.id}>
@@ -153,9 +155,9 @@ function AppliedFilters({filters = []}) {
   const location = useLocation();
   return (
     <>
-      <Heading as="h4" size="lead" className="pb-4">
+      <h4 className="pb-4 font-bold text-lead">
         Applied filters
-      </Heading>
+      </h4>
       <div className="flex flex-wrap gap-2">
         {filters.map((filter) => {
           return (
