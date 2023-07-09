@@ -3,16 +3,11 @@ import {MediaFile, Money, ShopPayButton} from '@shopify/hydrogen-react';
 import {AnalyticsPageType} from '@shopify/hydrogen';
 import {json} from '@shopify/remix-oxygen';
 
-import ProductOptions from '~/components/ProductOptions';
-
-// import Swiper core and required modules
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
 
+import ProductOptions from '~/components/ProductOptions';
 import ProductSlider from '~/components/ProductSlider';
-
-//temp
-import { useEffect } from 'react';
 
 const seo = ({data}) => ({
   title: data?.product?.seo?.title || data?.product?.title,
@@ -74,6 +69,7 @@ function ProductGallery({media}) {
     return null;
   }
 
+  // an object that maps media types to the corresponding type names
   const typeNameMap = {
     MODEL_3D: 'Model3d',
     VIDEO: 'Video',
@@ -83,7 +79,6 @@ function ProductGallery({media}) {
 
   return (
     <Swiper
-      // install Swiper modules
       modules={[Navigation, Pagination]}
       spaceBetween={50}
       slidesPerView={1}
@@ -164,11 +159,6 @@ function ProductForm({variantId, productAnalytics}) {
 export default function ProductHandle() {
   const {product, productRecommendations, selectedVariant, storeDomain} = useLoaderData();
   const orderable = selectedVariant?.availableForSale || false;
-
-  useEffect(() => {
-    console.log(productRecommendations)
-    console.log(product.id)
-  }, [])
 
   return (
     <section className="w-full gap-4 md:gap-8 grid grid-cols-1 px-6 md:px-8 lg:px-12">
